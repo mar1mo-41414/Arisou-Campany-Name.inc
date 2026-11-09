@@ -1,0 +1,1 @@
+# Arisou-Campany-Name.inc
