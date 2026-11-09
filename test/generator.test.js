@@ -161,13 +161,30 @@ test('条件を満たせないときは0件にせず、unmetLength で知らせ�
 // 法人種別
 // ---------------------------------------------------------------------------
 
-test('株式会社は前株・後株の両方があり得る', () => {
+test('株式会社の位置は既定で後株（◯◯株式会社）', () => {
+  // corpPosition を省略したときは後株。家系の既定に合わせている。
   const res = gen({ scripts: { kanji: true }, corp: 'kabushiki' }, 20).results;
+  res.forEach((r) => {
+    assert.strictEqual(r.position, 'suffix', '既定が後株になっていない: ' + r.full);
+    assert.ok(r.full.endsWith('株式会社'), r.full);
+  });
+  // 明示的に省略しても同じ
+  const data = G.generateNames({ scripts: { kanji: true }, corp: 'kabushiki', count: 5, seed: 'x' });
+  data.results.forEach((r) => assert.ok(r.full.endsWith('株式会社'), r.full));
+});
+
+test('自動を選ぶと前株・後株の両方があり得る', () => {
+  const res = gen({ scripts: { kanji: true }, corp: 'kabushiki', corpPosition: 'auto' }, 20).results;
   for (const r of res) {
     assert.ok(r.full.startsWith('株式会社') || r.full.endsWith('株式会社'), '法人種別が無い: ' + r.full);
   }
   const positions = new Set(res.map((r) => r.position));
   assert.ok(positions.has('prefix') && positions.has('suffix'), '位置が片方だけ: ' + [...positions]);
+});
+
+test('不明な位置を渡したときは後株（既定）に倒す', () => {
+  const res = gen({ scripts: { kanji: true }, corp: 'kabushiki', corpPosition: 'unknown' }, 10).results;
+  res.forEach((r) => assert.ok(r.full.endsWith('株式会社'), r.full));
 });
 
 test('前株固定・後株固定が効く', () => {
@@ -197,7 +214,23 @@ test('法人種別なしなら接頭辞も接尾辞も付かない', () => {
   });
 });
 
-test('本体が「製作所」などで終わるときは後株にしない（二重接尾辞を避ける）', () => {
+test('後株のとき、末尾が「所・店・局・社」になる業種接尾辞を使わない', () => {
+  // 「工業所株式会社」「事務所株式会社」のような二重接尾辞を避ける（後株が既定のため）
+  const cases = [null, ['manufacturing'], ['service'], ['trade'], ['it'], ['holding']];
+  for (const industries of cases) {
+    const res = gen({ scripts: { kanji: true }, corp: 'kabushiki', industries: industries }, 20).results;
+    for (const r of res) {
+      assert.ok(!/(所|店|局|社)株式会社$/.test(r.full), '二重接尾辞になった: ' + r.full);
+    }
+  }
+});
+
+test('前株なら「製作所」などの接尾辞も使う', () => {
+  const res = gen({ scripts: { kanji: true }, corp: 'kabushiki', corpPosition: 'prefix', industries: ['manufacturing'] }, 20).results;
+  assert.ok(res.some((r) => /(製作所|工作所|工業所)$/.test(r.core)), '前株で接尾辞が出ていない');
+});
+
+test('自動モードでは、本体が「製作所」などで終わるときに後株にしない', () => {
   const res = gen({ scripts: { kanji: true }, corp: 'kabushiki', corpPosition: 'auto' }, 20).results;
   const tails = /(製作所|工作所|工務店|事務所|不動産|診療所)$/;
   for (const r of res) {
@@ -276,7 +309,8 @@ test('空文字や記号だけの名前を作らない', () => {
 test('おかしな入力でも落ちない', () => {
   assert.strictEqual(G.normalizeOptions({ count: NaN }).count, G.DEFAULT_OPTIONS.count);
   assert.strictEqual(G.normalizeOptions({ corp: 'unknown' }).corp, 'kabushiki');
-  assert.strictEqual(G.normalizeOptions({ corpPosition: 'unknown' }).corpPosition, 'auto');
+  assert.strictEqual(G.normalizeOptions({ corpPosition: 'unknown' }).corpPosition, 'suffix');
+  assert.strictEqual(G.normalizeOptions({}).corpPosition, 'suffix');
   assert.strictEqual(G.normalizeOptions({ length: { min: -5, max: 99 } }).length.min, 1);
   assert.strictEqual(G.normalizeOptions({ length: { min: -5, max: 99 } }).length.max, 20);
 });

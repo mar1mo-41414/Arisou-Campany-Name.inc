@@ -17,11 +17,14 @@
   const posField = $('#pos-field');
   const toastEl = $('#toast');
 
+  // 法人種別の位置は、家系の既定に合わせて後株（◯◯株式会社）を初期値にする。
+  const DEFAULT_CORP_POS = 'suffix';
+
   const PRESETS = {
-    shoji: { scripts: ['kanji'], industries: ['trade', 'manufacturing', 'construction', 'finance'], length: { min: 3, max: 7 }, corp: 'kabushiki', digits: false },
-    it: { scripts: ['kanji', 'katakana', 'english'], industries: ['it'], length: { min: 3, max: 8 }, corp: 'kabushiki', digits: false },
-    global: { scripts: ['katakana', 'english'], industries: ['holding', 'it', 'logistics'], length: { min: 4, max: 10 }, corp: 'kabushiki', digits: false },
-    soft: { scripts: ['hiragana', 'katakana'], industries: ['service', 'media', 'medical'], length: { min: 2, max: 6 }, corp: 'godo', digits: false }
+    shoji: { scripts: ['kanji'], industries: ['trade', 'manufacturing', 'construction', 'finance'], length: { min: 3, max: 7 }, corp: 'kabushiki', corpPosition: DEFAULT_CORP_POS, digits: false },
+    it: { scripts: ['kanji', 'katakana', 'english'], industries: ['it'], length: { min: 3, max: 8 }, corp: 'kabushiki', corpPosition: DEFAULT_CORP_POS, digits: false },
+    global: { scripts: ['katakana', 'english'], industries: ['holding', 'it', 'logistics'], length: { min: 4, max: 10 }, corp: 'kabushiki', corpPosition: DEFAULT_CORP_POS, digits: false },
+    soft: { scripts: ['hiragana', 'katakana'], industries: ['service', 'media', 'medical'], length: { min: 2, max: 6 }, corp: 'godo', corpPosition: DEFAULT_CORP_POS, digits: false }
   };
 
   // --- チップ（チェックボックス / ラジオ）の見た目を input と同期させる ---------
@@ -65,7 +68,7 @@
     $('#len-min').value = p.length.min;
     $('#len-max').value = p.length.max;
     $('#corp').value = p.corp;
-    $$('input[name="corpPos"]').forEach((i) => { i.checked = i.value === 'auto'; });
+    $$('input[name="corpPos"]').forEach((i) => { i.checked = i.value === (p.corpPosition || DEFAULT_CORP_POS); });
     $$('input[name="digits"]').forEach((i) => { i.checked = !!p.digits; });
     if (p.industries === null) {
       setIndustryMode('all');
@@ -145,7 +148,7 @@
 
   function getCorpPos() {
     const checked = $('input[name="corpPos"]:checked');
-    return checked ? checked.value : 'auto';
+    return checked ? checked.value : DEFAULT_CORP_POS;
   }
 
   // --- 条件の読み取り ---------------------------------------------------------
@@ -369,7 +372,7 @@
 
   setScripts(['kanji', 'katakana']);
   setIndustryMode('all');
-  $$('input[name="corpPos"]').forEach((i) => { i.checked = i.value === 'auto'; });
+  $$('input[name="corpPos"]').forEach((i) => { i.checked = i.value === DEFAULT_CORP_POS; });
   syncChips();
   updatePosVisibility();
   updateHint();
