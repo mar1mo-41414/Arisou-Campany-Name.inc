@@ -1,0 +1,342 @@
+/* Arisou-Campany-Name.inc — 画面のスタイル */
+
+:root {
+  color-scheme: dark;
+  --bg: #0e0f13;
+  --panel: #1a1c22;
+  --panel2: #23262e;
+  --fg: #e6e8ee;
+  --muted: #8b909a;
+  --accent: #64b5f6;
+  --accent-hover: #90caf9;
+  --ok: #66bb6a;
+  --warn: #ffb74d;
+  --border: #2b2e37;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  padding: 16px 16px 48px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans CJK JP", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+main { max-width: 800px; margin: 0 auto; }
+
+/* --- ヘッダ --------------------------------------------------------------- */
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 4px 0 2px;
+}
+.head h1 { font-size: 20px; margin: 0; letter-spacing: 0.02em; }
+.head .repo {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.lead { color: var(--muted); font-size: 12.5px; margin: 0 0 16px; }
+
+/* --- パネル --------------------------------------------------------------- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px 14px;
+  margin-bottom: 12px;
+}
+.panel h2 {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.panel h2 .note {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--muted);
+  opacity: 0.85;
+  margin-left: 8px;
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row + .row { margin-top: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field > label, .group-label + *, .group-label { font-size: 11px; }
+.field > label, .group-label {
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* --- チップ（チェックボックス・ラジオの見た目） --------------------------- */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel2);
+  color: var(--fg);
+  font-size: 12.5px;
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.chip:hover { border-color: #3d424e; }
+.chip input {
+  appearance: none;
+  margin: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.chip .box {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid #4a4f5c;
+  border-radius: 3px;
+  display: inline-block;
+  position: relative;
+  flex: none;
+}
+.chip.radio .box { border-radius: 50%; }
+.chip.on { border-color: var(--accent); background: rgba(100, 181, 246, 0.12); }
+.chip.on .box { border-color: var(--accent); background: var(--accent); }
+.chip.on .box::after {
+  content: "";
+  position: absolute;
+  left: 2.5px;
+  top: 0;
+  width: 4px;
+  height: 7px;
+  border: solid #0e0f13;
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(42deg);
+}
+.chip.radio.on .box::after {
+  left: 3px;
+  top: 3px;
+  width: 4px;
+  height: 4px;
+  border: none;
+  border-radius: 50%;
+  background: #0e0f13;
+  transform: none;
+}
+.chip:focus-within, .chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ボタンとして使うチップ（チェックボックスを持たない） */
+.chip.small { padding: 5px 11px; font-size: 12px; }
+.chip.small .box { display: none; }
+
+/* --- 入力 ---------------------------------------------------------------- */
+select, input[type="text"], input[type="number"] {
+  background: var(--panel2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-size: 13px;
+  font-family: inherit;
+}
+input[type="number"] { width: 72px; }
+input::placeholder { color: #5d626d; }
+select:focus, input:focus, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--fg);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+button:hover { border-color: #3d424e; background: #2a2e37; }
+button:disabled { opacity: 0.45; cursor: default; }
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b0d11;
+  font-weight: 700;
+  font-size: 14.5px;
+  padding: 12px 20px;
+  letter-spacing: 0.04em;
+}
+button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+button.ghost { background: transparent; }
+button.small { padding: 5px 10px; font-size: 12px; }
+
+/* --- 生成バー ------------------------------------------------------------- */
+.genbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.genbar .hint { color: var(--warn); font-size: 12px; }
+
+/* --- 通知・警告 ----------------------------------------------------------- */
+.warn {
+  display: none;
+  border: 1px solid rgba(255, 183, 77, 0.45);
+  background: rgba(255, 183, 77, 0.08);
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+.warn.show { display: block; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 12px);
+  background: var(--panel2);
+  border: 1px solid var(--accent);
+  color: var(--fg);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* --- 結果カード ----------------------------------------------------------- */
+.results { display: flex; flex-direction: column; gap: 8px; }
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 11px 13px;
+  cursor: pointer;
+  color: var(--fg);
+  animation: pop 0.22s ease-out both;
+}
+.card:hover { border-color: #3d424e; background: #1e2129; }
+.card .num {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  min-width: 20px;
+  text-align: right;
+  flex: none;
+}
+.card .body { flex: 1; min-width: 0; }
+.card .name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+  line-height: 1.35;
+}
+.card .name .corp { color: var(--muted); font-weight: 400; font-size: 14px; }
+.card .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.card .read { color: #a8adb8; }
+.card .tag {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.card .len {
+  color: #6f7480;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.card .copy { flex: none; }
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.empty {
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty strong { color: var(--fg); }
+
+/* --- シード行・フッタ ----------------------------------------------------- */
+.seedline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 11.5px;
+  margin-top: 10px;
+}
+.seedline code {
+  color: var(--fg);
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 11.5px;
+}
+
+footer {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* --- 狭い画面 ------------------------------------------------------------- */
+@media (max-width: 560px) {
+  body { padding: 12px 12px 40px; }
+  .card { padding: 10px; gap: 9px; }
+  .card .name { font-size: 15.5px; }
+  .card .num { display: none; }
+}

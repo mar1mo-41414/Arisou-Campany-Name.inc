@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node (テストは依存なしで動くが、念のため)
+node_modules/
+npm-debug.log*
+
+# 一時ファイル
+*.log
+tmp/
