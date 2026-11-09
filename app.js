@@ -71,13 +71,12 @@
     $$('input[name="corpPos"]').forEach((i) => { i.checked = i.value === (p.corpPosition || DEFAULT_CORP_POS); });
     $$('input[name="digits"]').forEach((i) => { i.checked = !!p.digits; });
     if (p.industries === null) {
-      setIndustryMode('all');
+      setIndustryMode(U.selectAll());
     } else if (p.industries.length === 0) {
-      setIndustryMode('none');
+      setIndustryMode(U.selectNone());
     } else {
-      setIndustryMode('some', p.industries);
+      setIndustryMode(U.selectSome(p.industries));
     }
-    syncChips();
     updatePosVisibility();
     updateHint();
     toast('プリセットを適用しました');
@@ -94,20 +93,22 @@
     industryChips.appendChild(label);
   });
 
-  // 業種の選択状態は dataset.mode で持つ。
-  //   all  … 未選択（すべての業種から接尾辞を選ぶ）
+  // 業種の選択状態は ui-state.js の純粋なロジックで管理し、DOM はその写しにする。
+  //   all  … 指定なし（すべての業種から接尾辞を選ぶ）
   //   none … 業種接尾辞を付けない
   //   some … 選んだ業種だけ
-  function setIndustryMode(mode, list) {
-    industryChips.dataset.mode = mode;
-    const allowed = list || [];
+  const U = window.ArisouUiState;
+  let industryState = U.createState();
+
+  function renderIndustryState() {
     $$('input[name="industry"]').forEach((i) => {
-      i.checked = mode === 'some' && allowed.indexOf(i.value) >= 0;
+      i.checked = U.isSelected(industryState, i.value);
     });
     // 「全部」「接尾辞なし」はチェックボックスが全部オフになるので、
     // どちらのモードなのかをボタン側の見た目で示す。
     const allBtn = $('#industry-all');
     const noneBtn = $('#industry-none');
+    const mode = industryState.mode;
     allBtn.classList.toggle('on', mode === 'all');
     noneBtn.classList.toggle('on', mode === 'none');
     allBtn.setAttribute('aria-pressed', mode === 'all' ? 'true' : 'false');
@@ -115,28 +116,32 @@
     syncChips();
   }
 
+  function setIndustryMode(state) {
+    industryState = U.normalize(state);
+    renderIndustryState();
+  }
+
   function getIndustries() {
-    const mode = industryChips.dataset.mode;
-    if (mode === 'none') return [];
-    if (mode !== 'some') return null;
-    const checked = $$('input[name="industry"]').filter((i) => i.checked).map((i) => i.value);
-    return checked.length === 0 ? null : checked;
+    return U.industriesForRequest(industryState);
   }
 
   $('#industry-all').addEventListener('click', () => {
-    setIndustryMode('all');
+    setIndustryMode(U.selectAll());
     updateHint();
   });
 
   $('#industry-none').addEventListener('click', () => {
-    setIndustryMode('none');
+    setIndustryMode(U.selectNone());
     updateHint();
   });
 
-  // 業種チップを直接触ったら mode を切り替える（選択が残っていれば some、全部外れたら all）
-  industryChips.addEventListener('change', () => {
-    const checked = $$('input[name="industry"]').some((i) => i.checked);
-    setIndustryMode(checked ? 'some' : 'all');
+  // 業種チップの操作。チェック状態はブラウザが持っているので、
+  // その true/false を状態に反映するだけで、他を触らない。
+  industryChips.addEventListener('change', (ev) => {
+    const input = ev.target;
+    if (!input || input.name !== 'industry') return;
+    industryState = U.toggle(industryState, input.value, input.checked);
+    renderIndustryState();
     updateHint();
   });
 
@@ -371,7 +376,7 @@
   if (params.get('seed')) seedInput.value = params.get('seed');
 
   setScripts(['kanji', 'katakana']);
-  setIndustryMode('all');
+  setIndustryMode(U.selectAll());
   $$('input[name="corpPos"]').forEach((i) => { i.checked = i.value === DEFAULT_CORP_POS; });
   syncChips();
   updatePosVisibility();

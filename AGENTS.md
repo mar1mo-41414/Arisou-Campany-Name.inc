@@ -58,8 +58,10 @@
 index.html              画面（CSS は style.css、スクリプトは generator.js / app.js）
 style.css               スタイル（ダークテーマ・レスポンシブ）
 generator.js            語彙・組み立て・乱数・文字数の調整。DOM を触らない
+ui-state.js             業種選択の状態（all / none / some）。DOM を触らない
 app.js                  ルールの読み取り、カードの組み立て、コピー、トースト
-test/generator.test.js  node:test によるテスト
+test/generator.test.js  generator.js のテスト（node:test）
+test/ui-state.test.js   ui-state.js のテスト（node:test）
 docs/ARCHITECTURE.md    生成の流れ、語彙、確率、落とし穴
 docs/RULES.md           各ルールの意味と、なぜそれらしいのか
 HISTORY.md              経緯（新しい順）
@@ -81,7 +83,15 @@ HISTORY.md              経緯（新しい順）
 5. **シード欄の意味。** 生成のたびに欄を書き換えると「固定」の意味が消える。
    空欄＝毎回ランダム、値あり＝固定、に整理し、結果の下に「固定する」を置いた。
 6. **業種の「全部」と「接尾辞なし」の区別。** チップが全部オフのとき、どちらのモードか画面に出ないと分からない。
-   `dataset.mode`（all / none / some）で持ち、ボタン側に `aria-pressed` と見た目の ON を付ける。
+   状態を `{ mode: 'all'|'none'|'some', selected: [] }` で持ち、ボタン側に `aria-pressed` と見た目の ON を付ける。
+7. **業種チップの選択が即座に解除される（2026-11-09 に実際に起きた不具合）。**
+   change ハンドラから「モードだけ更新するつもり」で `setIndustryMode('some')` を呼び、
+   その中で選択リストを渡していなかったため、**選んだばかりのチェックを自分で全部外していた**。
+   結果、「エンタメ・メディア」を選んでも全業種が混ざった。
+   今は状態遷移を `ui-state.js` の純粋な関数（`toggle` / `selectSome` など）に閉じ込め、
+   **状態を書き換える関数は「引数で渡された状態」だけを正とする**。
+   DOM のチェック状態は状態の写しであって、状態の正ではない。同じ構造に戻さない。
+   `test/ui-state.test.js` に再現テストがある。
 7. **`file://` で動かなくする。** ES モジュール化は不可（§3）。
 8. **条件が厳しすぎるとき黙って空になる。** 満たせないときは「条件に一番近いもの」を返し、
    `unmetLength` を立てて UI に警告を出す。無言で0件にしない。
@@ -110,7 +120,7 @@ HISTORY.md              経緯（新しい順）
 
 ## 8. 変更時のチェックリスト
 
-1. `node --test` が通る
+1. `node --test` が通る（`generator.js` と `ui-state.js` の両方）
 2. ルールを足した / 変えた → README のルール説明と `docs/RULES.md` を更新し、
    正常系と矛盾する条件のテストを足した
 3. 確率や語彙を変えた → `docs/ARCHITECTURE.md` の該当箇所を更新。`HISTORY.md` に理由を書く
