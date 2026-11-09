@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ありそうな会社名ジェネレータ | Arisou-Campany-Name.inc</title>
+<meta name="description" content="ありそうな架空の会社名を作って遊ぶ Web ツール。ルールを選んで生成するだけ。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%231a1c22'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='%2364b5f6' font-family='serif'%3E会%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header class="head">
+    <h1>ありそうな会社名ジェネレータ</h1>
+    <span class="repo">Arisou-Campany-Name.inc</span>
+  </header>
+  <p class="lead">
+    ルールを選んで「生成する」を押すと、いかにも存在していそうな会社名を作ります。
+    実在するかどうかは調べません。実際の会社を作るわけでもありません。
+  </p>
+
+  <form id="rules" autocomplete="off">
+    <div class="panel">
+      <h2>1. 文字種 <span class="note">使ってよい文字を選ぶ（複数選択可）</span></h2>
+      <div class="chips" id="chips-script">
+        <label class="chip" data-value="kanji"><input type="checkbox" name="script" value="kanji"><span class="box"></span>漢字</label>
+        <label class="chip" data-value="katakana"><input type="checkbox" name="script" value="katakana"><span class="box"></span>カタカナ</label>
+        <label class="chip" data-value="hiragana"><input type="checkbox" name="script" value="hiragana"><span class="box"></span>ひらがな</label>
+        <label class="chip" data-value="english"><input type="checkbox" name="script" value="english"><span class="box"></span>英字</label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <span class="group-label">プリセット</span>
+        <div class="chips" id="presets">
+          <button type="button" class="chip small" data-preset="shoji">和風商事</button>
+          <button type="button" class="chip small" data-preset="it">IT・システム</button>
+          <button type="button" class="chip small" data-preset="global">グローバル</button>
+          <button type="button" class="chip small" data-preset="soft">ひらがな系</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>2. 文字数 <span class="note">法人種別（株式会社など）を除いた本体の長さ</span></h2>
+      <div class="row">
+        <div class="field">
+          <label for="len-min">最小</label>
+          <input type="number" id="len-min" name="lenMin" min="1" max="20" value="3">
+        </div>
+        <div class="field">
+          <label for="len-max">最大</label>
+          <input type="number" id="len-max" name="lenMax" min="1" max="20" value="6">
+        </div>
+        <div class="field">
+          <label for="count">生成する数</label>
+          <input type="number" id="count" name="count" min="1" max="20" value="10">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>3. 法人種別</h2>
+      <div class="row">
+        <div class="field">
+          <label for="corp">種類</label>
+          <select id="corp" name="corp">
+            <option value="kabushiki">株式会社</option>
+            <option value="yugen">有限会社</option>
+            <option value="godo">合同会社</option>
+            <option value="gomei">合名会社</option>
+            <option value="goshi">合資会社</option>
+            <option value="none">付けない（屋号のみ）</option>
+          </select>
+        </div>
+        <div class="field" id="pos-field">
+          <label>位置（株式会社のみ）</label>
+          <div class="chips">
+            <label class="chip radio" data-value="auto"><input type="radio" name="corpPos" value="auto"><span class="box"></span>自動</label>
+            <label class="chip radio" data-value="prefix"><input type="radio" name="corpPos" value="prefix"><span class="box"></span>前株</label>
+            <label class="chip radio" data-value="suffix"><input type="radio" name="corpPos" value="suffix"><span class="box"></span>後株</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>4. 業種 <span class="note">接尾辞（商事・システムズなど）の傾向。未選択なら全部</span></h2>
+      <div class="chips" id="chips-industry"></div>
+      <div class="row" style="margin-top:10px">
+        <button type="button" class="chip small" id="industry-all" aria-pressed="true">全部</button>
+        <button type="button" class="chip small" id="industry-none" aria-pressed="false">接尾辞なし</button>
+        <label class="chip" data-value="digits" style="margin-left:auto"><input type="checkbox" name="digits" value="1"><span class="box"></span>名前に数字を入れる</label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>5. シード <span class="note">空なら押すたびに別の結果。入力すると固定されます</span></h2>
+      <div class="row">
+        <input type="text" id="seed" name="seed" placeholder="空なら毎回ランダム" style="flex:1;min-width:180px">
+        <button type="button" class="chip small" id="seed-random">ランダムに固定</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="genbar">
+    <button type="button" class="primary" id="generate">生成する</button>
+    <button type="button" class="small" id="regen">別のシードで</button>
+    <span class="hint" id="gen-hint"></span>
+  </div>
+
+  <div class="warn" id="warn"></div>
+
+  <div class="results" id="results"></div>
+
+  <div class="seedline" id="seedline" hidden>
+    <span>使ったシード</span> <code id="seed-shown"></code>
+    <button type="button" class="small ghost" id="use-seed">固定する</button>
+    <button type="button" class="small ghost" id="copy-all">すべてコピー</button>
+    <span>※ 同じシードと同じルールなら、同じ会社名を再現できます</span>
+  </div>
+
+  <footer>
+    <p>
+      結果をクリックすると1件ずつ、「すべてコピー」で改行区切りでコピーできます。
+      生成はブラウザ内で完結し、サーバーへの送信もファイルの作成もしません。
+      実在の会社名と偶然一致することがありますが、実在しない会社名を実在する会社の名前として使わないでください。
+    </p>
+    <p>
+      <a href="https://github.com/mar1mo-41414/Arisou-Campany-Name.inc" target="_blank" rel="noopener">GitHub — Arisou-Campany-Name.inc</a>
+    </p>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="generator.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

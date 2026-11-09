@@ -166,6 +166,9 @@
 
   const SCRIPT_IDS = ['kanji', 'katakana', 'hiragana', 'english'];
 
+  // 一度に生成する上限。UI（app.js）の MAX_COUNT と揃える。
+  const MAX_COUNT = 20;
+
   const DEFAULT_OPTIONS = {
     scripts: { kanji: true, katakana: true, hiragana: false, english: false },
     digits: false,
@@ -271,7 +274,7 @@
       corp: CORP_TYPES[o.corp] ? o.corp : DEFAULT_OPTIONS.corp,
       corpPosition: o.corpPosition === 'prefix' || o.corpPosition === 'suffix' ? o.corpPosition : 'auto',
       industries: Array.isArray(o.industries) ? o.industries.slice() : null,
-      count: Math.max(1, Math.min(50, Number.isFinite(o.count) ? Math.floor(o.count) : DEFAULT_OPTIONS.count)),
+      count: Math.max(1, Math.min(MAX_COUNT, Number.isFinite(o.count) ? Math.floor(o.count) : DEFAULT_OPTIONS.count)),
       seed: o.seed == null ? null : String(o.seed)
     };
   }

@@ -1,7 +1,7 @@
 # 仕組み — どうやって「ありそう」を作っているか
 
 対象読者は開発者です。利用者向けの説明は [README.md](../README.md)、各ルールの意味は
-[RULES.md](RULES.md) にあります。
+[RULES.md](RULES.md)、作業方針は [AGENTS.md](../AGENTS.md) にあります。
 
 ## 1. 全体の流れ
 
@@ -20,6 +20,8 @@
 - `generator.js` は UI を知らない。Node から `require()` しても同じ結果になる（テストはこれを使う）。
 - `index.html` は `<script src="generator.js">` と `<script src="app.js">` の2本だけ読む。
   ES モジュールにしていないのは、`file://` で開いたときに CORS で止まるため。
+- 一度に生成する上限は 20 件（`generator.js` の `MAX_COUNT`、`app.js` の `MAX_COUNT`、
+  `index.html` の `input max` の3か所で管理）。
 
 ## 2. 名前の構造
 
@@ -58,7 +60,7 @@
 
 ## 4. 確率（ここが「ありそう」の調整つまみ）
 
-数字は `web/generator.js` の現在値。変えたらこの表も直す。
+数字は `generator.js` の現在値。変えたらこの表も直す。
 
 | 箇所 | 値 | 意図 |
 | --- | --- | --- |
@@ -94,7 +96,7 @@ UI が「条件では文字数に収まらなかった」と警告する。
 `full` で判定すると「株式会社◯◯」と「◯◯株式会社」が別物として両方出てしまうため。
 
 1回の生成で最大 `count × 80` 回まで試す。語彙が尽きて `count` 件に届かないこともある
-（その場合は返せる分だけ返す）。
+（その場合は返せる分だけ返す）。上限は 20 件なので、最悪でも 1,600 回の試行で終わる。
 
 ## 7. 再現性（シード）
 
@@ -134,8 +136,8 @@ UI 側の扱い（`app.js`）:
 1. `generator.js` の `DEFAULT_OPTIONS` と `normalizeOptions()` に足す
 2. `buildCore()` / `applyCorp()` に反映
 3. `index.html` にコントロールを足し、`app.js` の `readOptions()` で読む
-4. `tests/` に、そのルールが守られることのテストを足す
-5. README（日英）のルール表と `docs/RULES.md` を更新
+4. `test/generator.test.js` に、そのルールが守られることのテストを足す
+5. README のルール説明と `docs/RULES.md` を更新
 
 ## 9. やらないこと
 

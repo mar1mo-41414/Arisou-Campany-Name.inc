@@ -2,6 +2,7 @@
 (function () {
   'use strict';
 
+  const MAX_COUNT = 20; // 一度に生成する上限（Arisou 家の他作品と揃える）
   const G = window.ArisouCompanyName;
   const $ = (sel, base) => (base || document).querySelector(sel);
   const $$ = (sel, base) => Array.from((base || document).querySelectorAll(sel));
@@ -161,7 +162,7 @@
 
     let count = parseInt($('#count').value, 10);
     if (!Number.isFinite(count) || count < 1) count = 1;
-    if (count > 50) count = 50;
+    if (count > MAX_COUNT) count = MAX_COUNT;
 
     const industries = getIndustries();
 
@@ -194,7 +195,8 @@
     const frag = document.createDocumentFragment();
 
     data.results.forEach((r, i) => {
-      const card = document.createElement('div');
+      const card = document.createElement('button');
+      card.type = 'button';
       card.className = 'card';
       card.style.animationDelay = Math.min(i * 18, 260) + 'ms';
 
@@ -246,9 +248,15 @@
 
       const copy = document.createElement('button');
       copy.type = 'button';
-      copy.className = 'small ghost';
+      copy.className = 'small ghost copy';
       copy.textContent = 'コピー';
-      copy.addEventListener('click', () => copyText(r.full, 'コピーしました: ' + r.full));
+
+      // カードのどこを押してもコピー。ボタン自体を押したときは二重コピーを避ける。
+      card.addEventListener('click', () => copyText(r.full, 'コピーしました: ' + r.full));
+      copy.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        copyText(r.full, 'コピーしました: ' + r.full);
+      });
 
       card.appendChild(num);
       card.appendChild(body);

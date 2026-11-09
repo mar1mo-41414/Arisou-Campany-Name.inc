@@ -13,4 +13,4 @@ jobs:
         with:
           node-version: '20'
       - name: generator の単体テスト
-        run: node tests/generator.test.js
+        run: node --test

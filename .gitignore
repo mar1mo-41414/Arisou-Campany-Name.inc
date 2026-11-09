@@ -5,11 +5,6 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Python (tools/serve.py を venv で動かす場合)
-__pycache__/
-*.pyc
-.venv/
-
 # Node (テストは依存なしで動くが、念のため)
 node_modules/
 npm-debug.log*
