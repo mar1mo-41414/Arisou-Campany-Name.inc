@@ -61,6 +61,7 @@ cd Arisou-Campany-Name.inc
 index.html      画面
 style.css       スタイル
 generator.js    生成ロジック（UI に依存しない。Node からも実行できる）
+ui-state.js     業種選択の状態（DOM に依存しない。Node からも実行できる）
 app.js          画面操作（ルールの読み取り、表示、コピー）
 test/           テスト
 docs/           仕組みと考え方
