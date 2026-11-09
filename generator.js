@@ -174,7 +174,7 @@
     digits: false,
     length: { min: 3, max: 6 },
     corp: 'kabushiki',
-    corpPosition: 'auto',
+    corpPosition: 'suffix', // 既定は後株（◯◯株式会社）
     industries: null, // null = すべて / [] = 業種接尾辞なし
     count: 10,
     seed: null
@@ -272,12 +272,17 @@
       digits: !!o.digits,
       length: { min: min, max: max },
       corp: CORP_TYPES[o.corp] ? o.corp : DEFAULT_OPTIONS.corp,
-      corpPosition: o.corpPosition === 'prefix' || o.corpPosition === 'suffix' ? o.corpPosition : 'auto',
+      corpPosition: o.corpPosition === 'prefix' || o.corpPosition === 'auto'
+        ? o.corpPosition
+        : DEFAULT_OPTIONS.corpPosition,
       industries: Array.isArray(o.industries) ? o.industries.slice() : null,
       count: Math.max(1, Math.min(MAX_COUNT, Number.isFinite(o.count) ? Math.floor(o.count) : DEFAULT_OPTIONS.count)),
       seed: o.seed == null ? null : String(o.seed)
     };
   }
+
+  // 後株（◯◯株式会社）と相性の悪い接尾辞。「工業所株式会社」のように二重接尾辞に見える。
+  const BAD_TAIL_FOR_SUFFIX = /(所|店|局|社)$/;
 
   /** 業種接尾辞の候補（文字種ごと）を取り出す */
   function suffixCandidates(opt, script) {
@@ -286,10 +291,18 @@
       if (opt.industries === null) return true;
       return opt.industries.indexOf(ind.id) >= 0;
     });
+    const corp = CORP_TYPES[opt.corp];
+    const putBehind = !!corp && corp.position && opt.corpPosition !== 'prefix';
     for (const ind of targets) {
       const list = ind[script === 'english' ? 'en' : script === 'katakana' ? 'kata' : 'kanji'];
       if (!list) continue;
       for (const w of list) pools.push({ industry: ind.label, industryId: ind.id, text: w[0], read: w[1] });
+    }
+    if (putBehind && script === 'kanji') {
+      // 後株で「事業所」などが末尾に来ると不自然なので、その候補だけ外す。
+      // 外しすぎて候補が無くなることは避ける（残りを使う）。
+      const filtered = pools.filter((p) => !BAD_TAIL_FOR_SUFFIX.test(p.text));
+      if (filtered.length > 0) return filtered;
     }
     return pools;
   }
@@ -378,10 +391,14 @@
   function applyCorp(core, opt, rng) {
     const corp = CORP_TYPES[opt.corp];
     if (!corp || corp.id === 'none') return { full: core, position: 'none' };
-    if (corp.position && opt.corpPosition === 'suffix') {
+    if (!corp.position) {
+      // 株式会社以外（有限会社など）は前株しかない
+      return { full: corp.prefix + core, position: 'prefix' };
+    }
+    if (opt.corpPosition === 'suffix') {
       return { full: core + corp.suffix, position: 'suffix' };
     }
-    if (corp.position && opt.corpPosition === 'auto') {
+    if (opt.corpPosition === 'auto') {
       // 後株はやや少数派。3割くらいにする。
       // ただし本体が接尾辞で終わっているときは、ほぼ前株にする。
       const suffixChance = KANJI_TAIL.test(core) ? 0.05 : 0.3;
